@@ -1,15 +1,21 @@
 import { observer } from "mobx-react-lite"
-import React, { ChangeEvent, useState } from "react"
+import React, { ChangeEvent, useEffect, useState } from "react"
+import { Link, useHistory, useParams } from "react-router-dom"
 import { Button, Form, Segment } from "semantic-ui-react"
+import Loading from "../../../app/layout/Loading"
 import { Activity, ActivityPropNames } from "../../../app/models/activity"
 import { useStore } from "../../../app/stores/store"
 import { capitilizeFirstChar } from "../../../utils/utils"
+import { v4 as uuid } from "uuid"
+import { Routes } from "../../../app/Router"
 
 const ActivityForm = () => {
   const { activityStore } = useStore()
-  const { selectedActivity, closeForm, createActivity, updateActivity, loading } = activityStore
+  const { createActivity, updateActivity, loading, loadActivity, loadingInitial } = activityStore
+  const { id } = useParams<{ id: string }>()
+  const history = useHistory()
 
-  const initalState: Activity = selectedActivity ?? {
+  const [activity, setActivity] = useState({
     id: "",
     title: "",
     category: "",
@@ -17,18 +23,34 @@ const ActivityForm = () => {
     date: "",
     city: "",
     venue: "",
-  }
+  })
 
-  const [activity, setActivity] = useState(initalState)
+  useEffect(() => {
+    if (id) {
+      loadActivity(id).then((activity) => setActivity(activity!)) // ! istället för as ...
+    }
+  }, [id, loadActivity])
+
+  const pushToActivitieDetails = (id: string) => history.push(`/activities/${id}`)
 
   const handleSubmit = () => {
-    activity.id ? updateActivity(activity) : createActivity(activity)
+    if (activity.id.length === 0) {
+      const newActivity = {
+        ...activity,
+        id: uuid()
+      }
+      createActivity(newActivity).then(() => pushToActivitieDetails(newActivity.id))
+    } else {
+      updateActivity(activity).then(() => pushToActivitieDetails(activity.id))
+    }
   }
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target
     setActivity({ ...activity, [name]: value })
   }
+
+  if (loadingInitial) return <Loading content="Loading activity..." />
 
   return (
     <Segment clearing>
@@ -71,7 +93,7 @@ const ActivityForm = () => {
           onChange={handleInputChange}
         />
         <Button loading={loading} floated="right" positive type="submit" content="submit" />
-        <Button onClick={closeForm} floated="right" type="button" content="cancel" />
+        <Button as={Link} to={Routes.Activities} floated="right" type="button" content="cancel" />
       </Form>
     </Segment>
   )

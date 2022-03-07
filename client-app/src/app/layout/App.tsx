@@ -1,26 +1,26 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { Container } from "semantic-ui-react"
 import NavBar from "./NavBar"
-import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard"
-import Loading from "./Loading"
-import { useStore } from "../stores/store"
 import { observer } from "mobx-react-lite"
+import Router, { Routes } from "../Router"
+import { Route } from "react-router-dom"
+import HomePage from "../../features/home/HomePage"
 
 function App() {
-  const { activityStore } = useStore()
-
-  useEffect(() => {
-    activityStore.loadActivities()
-  }, [activityStore])
-
-  if (activityStore.loadingInitial) return <Loading content="Loading app" />
-
   return (
     <>
-      <NavBar />
-      <Container style={{ marginTop: "7em" }}>
-        <ActivityDashboard />
-      </Container>
+      <Route exact path={Routes.Home} component={HomePage} />
+      <Route
+        path={"/(.+)"}
+        render={() => (
+          <>
+            <NavBar />
+            <Container style={{ marginTop: "7em" }}>
+              <Router />
+            </Container>
+          </>
+        )}
+      />
     </>
   )
 }
