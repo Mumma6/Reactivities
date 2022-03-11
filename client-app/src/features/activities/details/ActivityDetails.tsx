@@ -1,10 +1,14 @@
 import { observer } from "mobx-react-lite"
 import React, { useEffect } from "react"
 import { Link, useParams } from "react-router-dom"
-import { Button, Card, Image } from "semantic-ui-react"
+import { Button, Card, Grid, GridColumn, Image } from "semantic-ui-react"
 import Loading from "../../../app/layout/Loading"
 import { Routes } from "../../../app/Router"
 import { useStore } from "../../../app/stores/store"
+import ActivityDetailedChat from "./ActivityDetailedChat"
+import ActivityDetailedHeader from "./ActivityDetailedHeader"
+import ActivityDetailedInfo from "./ActivityDetailedInfo"
+import ActivityDetailedSidebar from "./ActivityDetailedSidebar"
 
 const ActivityDetails = () => {
   const { activityStore } = useStore()
@@ -21,22 +25,16 @@ const ActivityDetails = () => {
   if (loadingInitial || !activity) return <Loading />
 
   return (
-    <Card fluid>
-      <Image src={`/assets/categoryImages/${activity.category.toLowerCase()}.jpg`} />
-      <Card.Content>
-        <Card.Header>{activity.title}</Card.Header>
-        <Card.Meta>
-          <span>{activity.date}</span>
-        </Card.Meta>
-        <Card.Description>{activity.description}</Card.Description>
-      </Card.Content>
-      <Card.Content extra>
-        <Button.Group widths={2}>
-          <Button as={Link} to={`/manage/${activity.id}`} basic color="blue" content="Edit" />
-          <Button as={Link} to={Routes.Activities} basic color="grey" content="Cancel" />
-        </Button.Group>
-      </Card.Content>
-    </Card>
+    <Grid>
+      <GridColumn width={10}>
+        <ActivityDetailedHeader activity={activity} />
+        <ActivityDetailedInfo activity={activity} />
+        <ActivityDetailedChat />
+      </GridColumn>
+      <GridColumn width={6}>
+        <ActivityDetailedSidebar />
+      </GridColumn>
+    </Grid>
   )
 }
 
